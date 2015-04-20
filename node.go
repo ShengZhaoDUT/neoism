@@ -29,8 +29,8 @@ func (db *Database) CreateNode(p Props) (*Node, error) {
 }
 
 // Node fetches a Node from the database
-func (db *Database) Node(id int) (*Node, error) {
-	uri := join(db.HrefNode, strconv.Itoa(id))
+func (db *Database) Node(id int64) (*Node, error) {
+	uri := join(db.HrefNode, strconv.FormatInt(id, 10))
 	return db.getNodeByUri(uri)
 }
 
@@ -114,11 +114,11 @@ type Node struct {
 }
 
 // Id gets the ID number of this Node.
-func (n *Node) Id() int {
+func (n *Node) Id() int64 {
 	l := len(n.Db.HrefNode)
 	s := n.HrefSelf[l:]
 	s = strings.Trim(s, "/")
-	id, err := strconv.Atoi(s)
+	id, err := strconv.ParseInt(s, 10, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -166,11 +166,11 @@ func (n *Node) Outgoing(types ...string) (Rels, error) {
 
 // Relate creates a relationship of relType, with specified properties,
 // from this Node to the node identified by destId.
-func (n *Node) Relate(relType string, destId int, p Props) (*Relationship, error) {
+func (n *Node) Relate(relType string, destId int64, p Props) (*Relationship, error) {
 	rel := Relationship{}
 	rel.Db = n.Db
 	srcUri := join(n.HrefSelf, "relationships")
-	destUri := join(n.Db.HrefNode, strconv.Itoa(destId))
+	destUri := join(n.Db.HrefNode, strconv.FormatInt(destId, 10))
 	content := map[string]interface{}{
 		"to":   destUri,
 		"type": relType,

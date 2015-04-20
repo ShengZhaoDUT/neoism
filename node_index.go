@@ -55,13 +55,13 @@ func (nix *LegacyNodeIndex) Add(n *Node, key string, value interface{}) error {
 // Remove deletes all entries with a given node, key and value from the index.
 // If value or both key and value are the blank string, they are ignored.
 func (nix *LegacyNodeIndex) Remove(n *Node, key, value string) error {
-	id := strconv.Itoa(n.Id())
+	id := strconv.FormatInt(n.Id(), 10)
 	return nix.remove(n.entity, id, key, value)
 }
 
 // Find locates Nodes in the index by exact key/value match.
-func (idx *LegacyNodeIndex) Find(key, value string) (map[int]*Node, error) {
-	nm := make(map[int]*Node)
+func (idx *LegacyNodeIndex) Find(key, value string) (map[int64]*Node, error) {
+	nm := make(map[int64]*Node)
 	rawurl, err := idx.uri()
 	if err != nil {
 		return nm, err
@@ -88,8 +88,8 @@ func (idx *LegacyNodeIndex) Find(key, value string) (map[int]*Node, error) {
 }
 
 // Query finds nodes with a query.
-func (idx *index) Query(query string) (map[int]*Node, error) {
-	nm := make(map[int]*Node)
+func (idx *index) Query(query string) (map[int64]*Node, error) {
+	nm := make(map[int64]*Node)
 	rawurl, err := idx.uri()
 	if err != nil {
 		return nm, err
