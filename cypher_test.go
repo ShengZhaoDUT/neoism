@@ -38,9 +38,9 @@ func TestCypherParameters(t *testing.T) {
 	// Query with string parameters and integer results
 	//
 	type resultStruct0 struct {
-		N int `json:"id(n)"`
-		R int `json:"id(r)"`
-		M int `json:"id(m)"`
+		N int64 `json:"id(n)"`
+		R int   `json:"id(r)"`
+		M int64 `json:"id(m)"`
 	}
 	result0 := []resultStruct0{}
 	cq := CypherQuery{
@@ -128,7 +128,7 @@ func TestCypherParameters(t *testing.T) {
 			ORDER BY id(n)
 			`,
 		Parameters: map[string]interface{}{
-			"arr": []int{n0.Id(), n1.Id()},
+			"arr": []int64{n0.Id(), n1.Id()},
 		},
 		Result: &result3,
 	}
@@ -165,7 +165,7 @@ func TestCypher(t *testing.T) {
 	}
 	result := []resultStruct{}
 	cq := CypherQuery{
-		Statement: "start x = node(" + strconv.Itoa(n0.Id()) + ") match x -[r]-> n return type(r), n.name, n.age",
+		Statement: "start x = node(" + strconv.FormatInt(n0.Id(), 10) + ") match x -[r]-> n return type(r), n.name, n.age",
 		Result:    &result,
 	}
 	err := db.Cypher(&cq)

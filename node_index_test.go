@@ -207,9 +207,9 @@ func TestFindNodeByExactMatch(t *testing.T) {
 	// This query should have returned a map containing just two nodes, n1 and n0.
 	assert.Equal(t, len(nodes), 2)
 	_, present := nodes[n0.Id()]
-	assert.Tf(t, present, "Find() failed to return node with id "+strconv.Itoa(n0.Id()))
+	assert.Tf(t, present, "Find() failed to return node with id "+strconv.FormatInt(n0.Id(), 10))
 	_, present = nodes[n1.Id()]
-	assert.Tf(t, present, "Find() failed to return node with id "+strconv.Itoa(n1.Id()))
+	assert.Tf(t, present, "Find() failed to return node with id "+strconv.FormatInt(n1.Id(), 10))
 }
 
 // 18.9.10. Find node by query
@@ -244,10 +244,10 @@ func TestFindNodeByQuery(t *testing.T) {
 	// Confirm
 	assert.Equalf(t, len(nodes0), 1, "Query should have returned only one Node.")
 	_, present := nodes0[n0.Id()]
-	assert.Tf(t, present, "Query() failed to return node with id "+strconv.Itoa(n0.Id()))
+	assert.Tf(t, present, "Query() failed to return node with id "+strconv.FormatInt(n0.Id(), 10))
 	assert.Equalf(t, len(nodes1), 2, "Query should have returned exactly 2 Nodes.")
 	_, present = nodes1[n0.Id()]
-	assert.Tf(t, present, "Query() failed to return node with id "+strconv.Itoa(n0.Id()))
+	assert.Tf(t, present, "Query() failed to return node with id "+strconv.FormatInt(n0.Id(), 10))
 	_, present = nodes1[n1.Id()]
-	assert.Tf(t, present, "Query() failed to return node with id "+strconv.Itoa(n1.Id()))
+	assert.Tf(t, present, "Query() failed to return node with id "+strconv.FormatInt(n1.Id(), 10))
 }

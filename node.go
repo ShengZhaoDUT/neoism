@@ -96,6 +96,31 @@ func (db *Database) getNodeByUri(uri string) (*Node, error) {
 	return &n, nil
 }
 
+// Relate creates a relationship of relType, with specified properties,
+// from srcId Node to the node identified by destId.
+func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p Props) (*Relationship, error) {
+	rel := Relationship{}
+	rel.Db = db
+	srcUri := join(join(db.HrefNode, strconv.FormatInt(srcId, 10)), "relationships")
+	destUri := join(db.HrefNode, strconv.FormatInt(destId, 10))
+	content := map[string]interface{}{
+		"to":   destUri,
+		"type": relType,
+	}
+	if p != nil {
+		content["data"] = &p
+	}
+	ne := NeoError{}
+	resp, err := db.Session.Post(srcUri, content, &rel, &ne)
+	if err != nil {
+		return &rel, err
+	}
+	if resp.Status() != 201 {
+		return &rel, ne
+	}
+	return &rel, nil
+}
+
 // A Node is a node, with optional properties, in a graph.
 type Node struct {
 	entity
