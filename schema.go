@@ -35,7 +35,14 @@ func (idx *Index) Drop() error {
 // CreateIndex starts a background job in the database that will create and
 // populate the new index of a specified property on nodes of a given label.
 func (db *Database) CreateIndex(label, property string) (*Index, error) {
-	uri := join(db.Url, "schema/index", label)
+	return db.addIndex(join(db.Url, "schema/index", label), property)
+}
+
+func (db *Database) CreateUniqueness(label, property string) (*Index, error) {
+	return db.addIndex(join(db.Url, "schema/constraint", label, "uniqueness"), property)
+}
+
+func (db *Database) addIndex(uri, property string) (*Index, error) {
 	payload := indexRequest{[]string{property}}
 	result := Index{db: db}
 	ne := NeoError{}
@@ -50,6 +57,7 @@ func (db *Database) CreateIndex(label, property string) (*Index, error) {
 		return nil, NotAllowed
 	}
 	return nil, ne
+
 }
 
 // Indexes lists indexes for a label.  If a blank string is given as the label,
