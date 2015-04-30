@@ -114,12 +114,12 @@ func (batch *Batch) Execute() ([]*BatchResponse, error) {
 	}
 
 	// prepare request
-	request, err := prepareRequest(batch.Stack)
-	if err != nil {
-		return nil, err
-	}
+	//	request, err := prepareRequest(batch.Stack)
+	//	if err != nil {
+	//		return nil, err
+	//	}
 
-	encodedRequest, err := jsonEncode(request)
+	//	encodedRequest, err := jsonEncode(request)
 	// res, err := batch.Neo4j.doBatchRequest("POST", batch.Neo4j.BatchURL, encodedRequest)
 	// if err != nil {
 	// 	return nil, err
