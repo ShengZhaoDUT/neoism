@@ -1,7 +1,6 @@
 package neoism
 
 import (
-	"encoding/json"
 	"errors"
 	"strconv"
 )
@@ -50,9 +49,9 @@ func (batch *Batch) GetLastIndex() string {
 }
 
 // NewBatch Creates New Batch request handler
-func (DB *Database) NewBatch() *Batch {
+func (db *Database) NewBatch() *Batch {
 	return &Batch{
-		Neo4j: DB,
+		DB:    db,
 		Stack: make([]*BatchRequest, 0),
 	}
 }
@@ -121,21 +120,21 @@ func (batch *Batch) Execute() ([]*BatchResponse, error) {
 	}
 
 	encodedRequest, err := jsonEncode(request)
-	res, err := batch.Neo4j.doBatchRequest("POST", batch.Neo4j.BatchURL, encodedRequest)
-	if err != nil {
-		return nil, err
-	}
+	// res, err := batch.Neo4j.doBatchRequest("POST", batch.Neo4j.BatchURL, encodedRequest)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err = json.Unmarshal([]byte(res), &response)
-	if err != nil {
-		return nil, err
-	}
+	// err = json.Unmarshal([]byte(res), &response)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// do mapping here for later usage
-	batch.mapResponse(response)
+	// // do mapping here for later usage
+	// batch.mapResponse(response)
 
-	// do a clean
-	batch.Stack = make([]*BatchRequest, 0)
+	// // do a clean
+	// batch.Stack = make([]*BatchRequest, 0)
 
 	return response, nil
 }
@@ -163,6 +162,6 @@ func (batch *Batch) mapResponse(response []*BatchResponse) {
 		// id is an Neo4j batch request feature, it returns back the id that we send
 		// so we can use it here to map results into our stack
 		id := val.ID
-		batch.Stack[id].Data.mapBatchResponse(batch.Neo4j, val.Body)
+		batch.Stack[id].Data.mapBatchResponse(batch.DB, val.Body)
 	}
 }
