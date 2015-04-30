@@ -62,7 +62,7 @@ type cypherResult struct {
 // Cypher executes a db query written in the Cypher language.  Data returned
 // from the db is used to populate `result`, which should be a pointer to a
 // slice of structs.  TODO:  Or a pointer to a two-dimensional array of structs?
-func (db *Database) Cypher(q *CypherQuery) error {
+func (db *Database) Cypher(q *CypherQuery) {
 	result := cypherResult{}
 	payload := cypherRequest{
 		Query:      q.Statement,
@@ -77,16 +77,15 @@ func (db *Database) Cypher(q *CypherQuery) error {
 	// }
 	resp, err := db.Session.Post(url, &payload, &result, &ne)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	if resp.Status() != 200 {
-		return ne
+		panic(ne)
 	}
 	q.cr = result
 	if q.Result != nil {
 		q.Unmarshal(q.Result)
 	}
-	return nil
 }
 
 type batchCypherQuery struct {
