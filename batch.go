@@ -3,10 +3,7 @@ package neoism
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 // Basic operation names
@@ -121,7 +118,7 @@ func (batch *Batch) Execute() error {
 	var result interface{}
 
 	resp, err := batch.DB.Session.Post(batch.DB.HrefBatch, prepareRequest(batch.Stack), result, ne)
-	spew.Fdump(os.Stdout, resp)
+	//spew.Fdump(os.Stdout, resp)
 
 	if err != nil {
 		return err
