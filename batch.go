@@ -13,6 +13,7 @@ var (
 	BatchDelete       = "delete"
 	BatchUpdate       = "update"
 	BatchCreateUnique = "createUnique"
+	BatchCreateLabel  = "addLabel"
 )
 
 // Batcher is the interface for structs for making them compatible with Batch.
@@ -38,6 +39,11 @@ type BatchResponse struct {
 	Location string      `json:"location"`
 	Body     interface{} `json:"body"`
 	From     string      `json:"from"`
+}
+
+type labelOperation struct {
+	nodeID int64
+	labels []string
 }
 
 // GetLastIndex Returns last index of current stack
@@ -82,6 +88,13 @@ func (batch *Batch) Update(obj Batcher) *Batch {
 	batch.addToStack(BatchUpdate, obj)
 
 	return batch
+}
+
+func (batch *Batch) AddLabels(nodeID int64, labels ...string) *Batch {
+	batch.addToStack(BatchCreateLabel, &labelOperation{nodeID: nodeID, labels: labels})
+
+	return batch
+
 }
 
 // Adds requests to stack
@@ -142,6 +155,15 @@ func prepareRequest(stack []*BatchRequest, db *Database) []map[string]interface{
 	}
 
 	return request
+}
+
+func (labelOperation *labelOperation) getBatchQuery(operation string, db *Database) map[string]interface{} {
+	return map[string]interface{}{
+		"method": "POST",
+		"to":     fmt.Sprintf("/node/%d/labels", labelOperation.nodeID),
+		"body":   labelOperation.labels,
+	}
+
 }
 
 func (n *Node) getBatchQuery(operation string, db *Database) map[string]interface{} {
