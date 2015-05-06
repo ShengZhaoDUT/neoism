@@ -121,6 +121,19 @@ func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p P
 	return &rel, nil
 }
 
+func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) error {
+	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties", key)
+	ne := NeoError{}
+	resp, err := db.Session.Put(url, &value, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() != 204 {
+		return ne
+	}
+	return nil // Success!
+}
+
 // A Node is a node, with optional properties, in a graph.
 type Node struct {
 	entity
