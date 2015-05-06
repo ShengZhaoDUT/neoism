@@ -2,7 +2,11 @@ package neoism
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"strconv"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // Basic operation names
@@ -16,8 +20,7 @@ var (
 
 // Batcher is the interface for structs for making them compatible with Batch.
 type Batcher interface {
-	getBatchQuery(operation string) (map[string]interface{}, error)
-	mapBatchResponse(DB *Database, data interface{}) (bool, error)
+	getBatchQuery(operation string) map[string]interface{}
 }
 
 // Batch Base struct to support request
@@ -97,71 +100,121 @@ func (batch *Batch) addToStack(operation string, obj Batcher) {
 
 // Execute Prepares and sends the request to Neo4j
 // If the request is successful then parses the response
-func (batch *Batch) Execute() ([]*BatchResponse, error) {
+func (batch *Batch) Execute() error {
 
 	// if Neo4j instance is not created return an error
 	if batch.DB == nil {
-		return nil, errors.New("Batch request is not created by NewBatch method!")
+		return errors.New("Batch request is not created by NewBatch method!")
 	}
 	// cache batch stack length
 	stackLength := len(batch.Stack)
 
 	//create result array
-	response := make([]*BatchResponse, stackLength)
+	//	response := make([]*BatchResponse, stackLength)
 
 	if stackLength == 0 {
-		return response, nil
+		panic("Empty batch")
 	}
 
 	// prepare request
-	//	request, err := prepareRequest(batch.Stack)
-	//	if err != nil {
-	//		return nil, err
-	//	}
+	ne := NeoError{}
+	var result interface{}
 
-	//	encodedRequest, err := jsonEncode(request)
-	// res, err := batch.Neo4j.doBatchRequest("POST", batch.Neo4j.BatchURL, encodedRequest)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	resp, err := batch.DB.Session.Post(batch.DB.HrefBatch, prepareRequest(batch.Stack), result, ne)
+	spew.Fdump(os.Stdout, resp)
 
-	// err = json.Unmarshal([]byte(res), &response)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return err
+	}
 
-	// // do mapping here for later usage
-	// batch.mapResponse(response)
+	if resp.Status() != 200 {
+		return ne
+	}
 
-	// // do a clean
-	// batch.Stack = make([]*BatchRequest, 0)
-
-	return response, nil
+	return nil
 }
 
 // prepares batch request as slice of map
-func prepareRequest(stack []*BatchRequest) ([]map[string]interface{}, error) {
+func prepareRequest(stack []*BatchRequest) []map[string]interface{} {
 	request := make([]map[string]interface{}, len(stack))
 	for i, value := range stack {
 		// interface has this method getBatchQuery()
-		query, err := value.Data.getBatchQuery(value.Operation)
-		if err != nil {
-			return nil, err
-		}
+		query := value.Data.getBatchQuery(value.Operation)
 		query["id"] = i
 		request[i] = query
 	}
 
-	return request, nil
+	return request
 }
 
-// map incoming response, it will update request's nodes and relationships
-func (batch *Batch) mapResponse(response []*BatchResponse) {
+func (n *Node) getBatchQuery(operation string) map[string]interface{} {
 
-	for _, val := range response {
-		// id is an Neo4j batch request feature, it returns back the id that we send
-		// so we can use it here to map results into our stack
-		id := val.ID
-		batch.Stack[id].Data.mapBatchResponse(batch.DB, val.Body)
+	query := make(map[string]interface{})
+	switch operation {
+	case BatchGet:
+		query["method"] = "GET"
+		query["to"] = n.HrefSelf
+
+	case BatchUpdate:
+
+		query["method"] = "PUT"
+		query["to"] = n.HrefProperties
+		query["body"] = n.Data
+
+	case BatchCreate:
+		query = map[string]interface{}{
+			"method": "POST",
+			"to":     "/node",
+			"body":   n.Data,
+		}
+
+	case BatchDelete:
+		query["method"] = "DELETE"
+		query["to"] = n.HrefSelf
+
 	}
+	return query
+
+}
+
+func (r *Relationship) getBatchQuery(operation string) map[string]interface{} {
+
+	if r.Type == "" {
+		panic("No Type on relationship")
+	}
+
+	switch operation {
+	case BatchGet:
+
+		return map[string]interface{}{
+			"method": "GET",
+			"to":     r.HrefSelf,
+		}
+
+	case BatchUpdate:
+		return map[string]interface{}{
+			"method": "PUT",
+			"to":     r.HrefSelf,
+			"body":   r.Data,
+		}
+	case BatchCreate:
+
+		return map[string]interface{}{
+			"method": "POST",
+			"to":     fmt.Sprintf("/node/%d/relationships", r.StartID()),
+			"body": map[string]interface{}{
+				"to":   fmt.Sprintf("/node/%d", r.EndID()),
+				"type": r.Type,
+				"data": r.Data,
+			},
+		}
+
+	case BatchDelete:
+		return map[string]interface{}{
+			"method": "DELETE",
+			"to":     r.HrefSelf,
+		}
+
+	}
+	return nil
 }

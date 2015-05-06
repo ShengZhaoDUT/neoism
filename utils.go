@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -29,6 +30,18 @@ func jsonDecode(data string, result *interface{}) error {
 	}
 
 	return nil
+}
+
+func getID(url string) int {
+	parts := strings.Split(url, "/")
+	s := parts[len(parts)-1]
+	id, err := strconv.Atoi(s)
+	if err != nil {
+		// Are both r.Info and r.Node valid?
+		panic(err)
+	}
+	return id
+
 }
 
 // Obtain id from incoming URL

@@ -73,6 +73,14 @@ func (r *Relationship) Id() int {
 	return id
 }
 
+func (r *Relationship) StartID() int {
+	return getID(r.HrefStart)
+}
+
+func (r *Relationship) EndID() int {
+	return getID(r.HrefEnd)
+}
+
 // Start gets the starting Node of this Relationship.
 func (r *Relationship) Start() (*Node, error) {
 	// log.Println("INFO", r.Info)
