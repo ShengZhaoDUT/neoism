@@ -17,7 +17,7 @@ var (
 
 // Batcher is the interface for structs for making them compatible with Batch.
 type Batcher interface {
-	getBatchQuery(operation string) map[string]interface{}
+	getBatchQuery(operation string, db *Database) map[string]interface{}
 }
 
 // Batch Base struct to support request
@@ -117,7 +117,7 @@ func (batch *Batch) Execute() error {
 	ne := NeoError{}
 	var result interface{}
 
-	resp, err := batch.DB.Session.Post(batch.DB.HrefBatch, prepareRequest(batch.Stack), result, ne)
+	resp, err := batch.DB.Session.Post(batch.DB.HrefBatch, prepareRequest(batch.Stack, batch.DB), result, ne)
 	//spew.Fdump(os.Stdout, resp)
 
 	if err != nil {
@@ -132,11 +132,11 @@ func (batch *Batch) Execute() error {
 }
 
 // prepares batch request as slice of map
-func prepareRequest(stack []*BatchRequest) []map[string]interface{} {
+func prepareRequest(stack []*BatchRequest, db *Database) []map[string]interface{} {
 	request := make([]map[string]interface{}, len(stack))
 	for i, value := range stack {
 		// interface has this method getBatchQuery()
-		query := value.Data.getBatchQuery(value.Operation)
+		query := value.Data.getBatchQuery(value.Operation, db)
 		query["id"] = i
 		request[i] = query
 	}
@@ -144,18 +144,18 @@ func prepareRequest(stack []*BatchRequest) []map[string]interface{} {
 	return request
 }
 
-func (n *Node) getBatchQuery(operation string) map[string]interface{} {
+func (n *Node) getBatchQuery(operation string, db *Database) map[string]interface{} {
 
 	query := make(map[string]interface{})
 	switch operation {
 	case BatchGet:
 		query["method"] = "GET"
-		query["to"] = n.HrefSelf
+		query["to"] = db.getRelativePath(n.HrefSelf)
 
 	case BatchUpdate:
 
 		query["method"] = "PUT"
-		query["to"] = n.HrefProperties
+		query["to"] = db.getRelativePath(n.HrefProperties)
 		query["body"] = n.Data
 
 	case BatchCreate:
@@ -167,14 +167,14 @@ func (n *Node) getBatchQuery(operation string) map[string]interface{} {
 
 	case BatchDelete:
 		query["method"] = "DELETE"
-		query["to"] = n.HrefSelf
+		query["to"] = db.getRelativePath(n.HrefSelf)
 
 	}
 	return query
 
 }
 
-func (r *Relationship) getBatchQuery(operation string) map[string]interface{} {
+func (r *Relationship) getBatchQuery(operation string, db *Database) map[string]interface{} {
 
 	if r.Type == "" {
 		panic("No Type on relationship")
@@ -185,13 +185,13 @@ func (r *Relationship) getBatchQuery(operation string) map[string]interface{} {
 
 		return map[string]interface{}{
 			"method": "GET",
-			"to":     r.HrefSelf,
+			"to":     db.getRelativePath(r.HrefSelf),
 		}
 
 	case BatchUpdate:
 		return map[string]interface{}{
 			"method": "PUT",
-			"to":     r.HrefSelf,
+			"to":     db.getRelativePath(r.HrefSelf),
 			"body":   r.Data,
 		}
 	case BatchCreate:
@@ -209,7 +209,7 @@ func (r *Relationship) getBatchQuery(operation string) map[string]interface{} {
 	case BatchDelete:
 		return map[string]interface{}{
 			"method": "DELETE",
-			"to":     r.HrefSelf,
+			"to":     db.getRelativePath(r.HrefSelf),
 		}
 
 	}

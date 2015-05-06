@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/jmcvetta/napping"
 )
@@ -28,6 +29,10 @@ type Database struct {
 	HrefTransaction string      `json:"transaction"`
 	Version         string      `json:"neo4j_version"`
 	Extensions      interface{} `json:"extensions"`
+}
+
+func (db *Database) getRelativePath(url string) string {
+	return strings.TrimPrefix(url, db.Url)
 }
 
 // connectWithRetry tries to establish a connection to the Neo4j server.
