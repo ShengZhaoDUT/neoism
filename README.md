@@ -106,6 +106,48 @@ if err != nil {
 }
 ```
 
+
+# Batch Rest API
+
+```
+package main
+
+import (
+	"linkedin/config"
+	"linkedin/service/neo4j"
+
+	"github.com/linkedin-inc/neoism"
+)
+
+func main() {
+	config.Init()
+	node := &neoism.Node{Data: map[string]interface{}{"test2": "hello"}}
+	node2 := &neoism.Node{Data: map[string]interface{}{"test2": "hello2"}}
+	db := neo4j.REST
+
+	// test node
+	batch := db.NewBatch()
+	batch.Create(node)
+	batch.Create(node2)
+	if err := batch.Execute(); err != nil {
+		panic(err)
+	}
+
+	// test relationship
+	n0, _ := db.CreateNode(neoism.Props{"name": "test"})
+	n1, _ := db.CreateNode(neoism.Props{"name": "test2"})
+
+	batch = db.NewBatch()
+	batch.Create(&neoism.Relationship{HrefStart: n0.HrefSelf, HrefEnd: n1.HrefSelf, Type: "test"})
+	batch.AddLabels(n0.Id(), "user", "person")
+
+	if err := batch.Execute(); err != nil {
+		panic(err)
+	}
+
+}
+```
+
 # Status
 
 [![Build Status](https://travis-ci.org/jmcvetta/neoism.png?branch=master)](https://travis-ci.org/jmcvetta/neoism)
