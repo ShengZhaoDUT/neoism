@@ -46,6 +46,10 @@ type labelOperation struct {
 	labels []string
 }
 
+type cypherQueryString struct {
+	query string
+}
+
 // GetLastIndex Returns last index of current stack
 // This method can be used to obtain the latest index for creating
 // manual batch requests or injecting the order number of pre-added request(s) id
@@ -95,6 +99,11 @@ func (batch *Batch) AddLabels(nodeID int64, labels ...string) *Batch {
 
 	return batch
 
+}
+
+func (batch *Batch) Cypher(query string) *Batch {
+	batch.addToStack(BatchUpdate, &cypherQueryString{query: query})
+	return batch
 }
 
 // Adds requests to stack
@@ -155,6 +164,18 @@ func prepareRequest(stack []*BatchRequest, db *Database) []map[string]interface{
 	}
 
 	return request
+}
+
+//
+func (cypher *cypherQueryString) getBatchQuery(operation string, db *Database) map[string]interface{} {
+	return map[string]interface{}{
+		"method": "POST",
+		"to":     "/cypher",
+		"body": map[string]interface{}{
+			"query": cypher.query,
+		},
+	}
+
 }
 
 func (labelOperation *labelOperation) getBatchQuery(operation string, db *Database) map[string]interface{} {
