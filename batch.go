@@ -80,11 +80,23 @@ func (batch *Batch) Create(obj Batcher) *Batch {
 	return batch
 }
 
+//
+func (batch *Batch) CreateRelationship(startID, endID int64, label string) {
+	batch.Create(&Relationship{HrefStart: nodeURLByNode(startID), HrefEnd: nodeURLByNode(startID), Type: label})
+}
+
 // Delete request to Neo4j as batch
 func (batch *Batch) Delete(obj Batcher) *Batch {
 	batch.addToStack(BatchDelete, obj)
 
 	return batch
+}
+
+func (batch *Batch) DeleteRelationship(relationshipID int64) {
+	r := &Relationship{}
+	r.HrefSelf = fmt.Sprintf("/relationship/%d", relationshipID)
+
+	batch.Delete(r)
 }
 
 // Update request to Neo4j as batch
@@ -219,10 +231,6 @@ func (n *Node) getBatchQuery(operation string, db *Database) map[string]interfac
 
 func (r *Relationship) getBatchQuery(operation string, db *Database) map[string]interface{} {
 
-	if r.Type == "" {
-		panic("No Type on relationship")
-	}
-
 	switch operation {
 	case BatchGet:
 
@@ -238,12 +246,15 @@ func (r *Relationship) getBatchQuery(operation string, db *Database) map[string]
 			"body":   r.Data,
 		}
 	case BatchCreate:
+		if r.Type == "" {
+			panic("No Type on relationship")
+		}
 
 		return map[string]interface{}{
 			"method": "POST",
-			"to":     fmt.Sprintf("/node/%d/relationships", r.StartID()),
+			"to":     relationshipURLByNode(int64(r.StartID())),
 			"body": map[string]interface{}{
-				"to":   fmt.Sprintf("/node/%d", r.EndID()),
+				"to":   fmt.Sprintf("/node/%d", int64(r.EndID())),
 				"type": r.Type,
 				"data": r.Data,
 			},

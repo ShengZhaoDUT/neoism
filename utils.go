@@ -59,6 +59,15 @@ func getIDFromURL(base, url string) (string, error) {
 	return "", errors.New("URL not valid")
 }
 
+//
+func relationshipURLByNode(nodeID int64) string {
+	return fmt.Sprintf("/node/%d/relationships", nodeID)
+}
+
+func nodeURLByNode(nodeID int64) string {
+	return fmt.Sprintf("/node/%d", nodeID)
+}
+
 // to-do combine this method with doRequest function
 func (db *Database) doBatchRequest(requestType, url, data string) (string, error) {
 
