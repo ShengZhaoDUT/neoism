@@ -110,6 +110,7 @@ if err != nil {
 # Batch Rest API
 
 ```
+
 package main
 
 import (
@@ -139,6 +140,7 @@ func main() {
 
 	batch = db.NewBatch()
 	batch.Create(&neoism.Relationship{HrefStart: n0.HrefSelf, HrefEnd: n1.HrefSelf, Type: "test"})
+	batch.Cypher("match (n) return n")
 	batch.AddLabels(n0.Id(), "user", "person")
 
 	if err := batch.Execute(); err != nil {
