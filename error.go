@@ -30,7 +30,7 @@ type NeoError struct {
 
 // Error returns the error message supplied by the server.
 func (ne NeoError) Error() string {
-	return ne.Message
+	return "Message: " + ne.Message + "\nException: " + ne.Exception
 }
 
 // A TxError is an error with one of the statements submitted in a transaction,
