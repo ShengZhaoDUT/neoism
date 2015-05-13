@@ -1,6 +1,7 @@
 package neoism
 
 import (
+	"github.com/jmcvetta/napping"
 	"strconv"
 )
 
@@ -9,7 +10,7 @@ func (db *Database) Recommendation(id int64, limit int) ([]Recommendation, error
 
 	uri := join(db.HrefReco, strconv.FormatInt(id, 10))
 	ne := NeoError{}
-	resp, err := db.Session.Get(uri, nil, &reco, &ne)
+	resp, err := db.Session.Get(uri, &napping.Params{"limit": strconv.Itoa(limit)}, &reco, &ne)
 	if err != nil {
 		return reco, err
 	}
