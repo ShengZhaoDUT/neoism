@@ -17,17 +17,18 @@ import (
 // A Database is a REST client connected to a Neo4j database.
 type Database struct {
 	Session         *napping.Session
-	Url             string      `json:"-"` // Root URL for REST API
-	HrefNode        string      `json:"node"`
-	HrefRefNode     string      `json:"reference_node"`
-	HrefNodeIndex   string      `json:"node_index"`
-	HrefRelIndex    string      `json:"relationship_index"`
-	HrefExtInfo     string      `json:"extensions_info"`
-	HrefRelTypes    string      `json:"relationship_types"`
-	HrefBatch       string      `json:"batch"`
-	HrefCypher      string      `json:"cypher"`
-	HrefTransaction string      `json:"transaction"`
-	Version         string      `json:"neo4j_version"`
+	Url             string `json:"-"` // Root URL for REST API
+	HrefNode        string `json:"node"`
+	HrefRefNode     string `json:"reference_node"`
+	HrefNodeIndex   string `json:"node_index"`
+	HrefRelIndex    string `json:"relationship_index"`
+	HrefExtInfo     string `json:"extensions_info"`
+	HrefRelTypes    string `json:"relationship_types"`
+	HrefBatch       string `json:"batch"`
+	HrefCypher      string `json:"cypher"`
+	HrefTransaction string `json:"transaction"`
+	Version         string `json:"neo4j_version"`
+	HrefReco        string
 	Extensions      interface{} `json:"extensions"`
 }
 
@@ -59,6 +60,7 @@ func connectWithRetry(db *Database, parsedUrl *url.URL, retries int) (*Database,
 		parsedUrl.Path = "/db/data/"
 		return connectWithRetry(db, parsedUrl, retries+1)
 	}
+	db.HrefReco = "http://" + join(parsedUrl.Host, "graphaware/recommendation")
 	return db, nil
 }
 
