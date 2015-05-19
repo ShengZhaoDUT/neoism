@@ -134,6 +134,19 @@ func (db *Database) SetNodeProperty(destID int64, key string, value interface{})
 	return nil // Success!
 }
 
+func (db *Database) GetNodeProperty(destID int64, result interface{}) error {
+	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties")
+	ne := NeoError{}
+	resp, err := db.Session.Get(url, nil, &result, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() != 200 && resp.Status() != 204 {
+		return ne
+	}
+	return nil // Success!
+}
+
 // A Node is a node, with optional properties, in a graph.
 type Node struct {
 	entity
