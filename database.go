@@ -60,7 +60,7 @@ func connectWithRetry(db *Database, parsedUrl *url.URL, retries int) (*Database,
 		parsedUrl.Path = "/db/data/"
 		return connectWithRetry(db, parsedUrl, retries+1)
 	}
-	db.HrefReco = "http://" + join(parsedUrl.Host, "graphaware/recommendation")
+	db.HrefReco = "http://" + join(parsedUrl.Host, "graphaware/reco")
 	return db, nil
 }
 
