@@ -32,10 +32,10 @@ func jsonDecode(data string, result *interface{}) error {
 	return nil
 }
 
-func getID(url string) int {
+func getID(url string) int64 {
 	parts := strings.Split(url, "/")
 	s := parts[len(parts)-1]
-	id, err := strconv.Atoi(s)
+	id, err := strconv.ParseInt(s, 10, 0)
 	if err != nil {
 		// Are both r.Info and r.Node valid?
 		panic(err)

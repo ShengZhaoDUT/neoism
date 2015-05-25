@@ -73,11 +73,11 @@ func (r *Relationship) Id() int {
 	return id
 }
 
-func (r *Relationship) StartID() int {
+func (r *Relationship) StartID() int64 {
 	return getID(r.HrefStart)
 }
 
-func (r *Relationship) EndID() int {
+func (r *Relationship) EndID() int64 {
 	return getID(r.HrefEnd)
 }
 
@@ -90,6 +90,17 @@ func (r *Relationship) Start() (*Node, error) {
 // End gets the ending Node of this Relationship.
 func (r *Relationship) End() (*Node, error) {
 	return r.Db.getNodeByUri(r.HrefEnd)
+}
+
+func (r *Relationship) GetOtherNode(src int64) int64 {
+	start := getID(r.HrefStart)
+	end := getID(r.HrefEnd)
+	if start == src {
+		return end
+	} else if end == src {
+		return start
+	}
+	panic("Both start and end are not match")
 }
 
 // A Rels is a collection of relationships.
