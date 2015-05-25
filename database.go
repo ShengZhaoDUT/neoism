@@ -29,6 +29,7 @@ type Database struct {
 	HrefTransaction string `json:"transaction"`
 	Version         string `json:"neo4j_version"`
 	HrefReco        string
+	HrefCReco       string
 	Extensions      interface{} `json:"extensions"`
 }
 
@@ -61,6 +62,7 @@ func connectWithRetry(db *Database, parsedUrl *url.URL, retries int) (*Database,
 		return connectWithRetry(db, parsedUrl, retries+1)
 	}
 	db.HrefReco = "http://" + join(parsedUrl.Host, "graphaware/reco")
+	db.HrefCReco = "http://" + join(parsedUrl.Host, "graphaware/creco")
 	return db, nil
 }
 
