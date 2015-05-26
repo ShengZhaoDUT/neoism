@@ -25,8 +25,8 @@ func (db *Database) Recommendation(id int64, limit int) ([]Recommendation, error
 	return reco, err
 }
 
-func (db *Database) ConcactRecommendation(id int64, limit int) ([]Recommendation, error) {
-	reco := []Recommendation{}
+func (db *Database) ConcactRecommendation(id int64, limit int) ([]ConcactRecommendation, error) {
+	reco := []ConcactRecommendation{}
 
 	uri := join(db.HrefCReco, strconv.FormatInt(id, 10))
 	ne := NeoError{}
@@ -50,5 +50,13 @@ type Recommendation struct {
 	ID              int64       `json:"id"`
 	Score           interface{} `json:"score"`
 	inContact       bool        `json:"inContact"`
+	friendsInCommon []int64     `json:"friendsInCommon"`
+}
+
+type ConcactRecommendation struct {
+	//	UUID  string      `json:"uuid"`
+	ID              int64       `json:"id"`
+	Phone           string      `json:"phone"`
+	Score           interface{} `json:"score"`
 	friendsInCommon []int64     `json:"friendsInCommon"`
 }
