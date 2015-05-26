@@ -47,6 +47,8 @@ func (db *Database) ConcactRecommendation(id int64, limit int) ([]Recommendation
 
 type Recommendation struct {
 	//	UUID  string      `json:"uuid"`
-	ID    int64       `json:"id"`
-	Score interface{} `json:"score"`
+	ID              int64       `json:"id"`
+	Score           interface{} `json:"score"`
+	inContact       bool        `json:"inContact"`
+	friendsInCommon []int64     `json:"friendsInCommon"`
 }
