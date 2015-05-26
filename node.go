@@ -129,6 +129,8 @@ func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p P
 	return db.Relate(relType, srcId, destId, p)
 }
 
+// UpdateProperties replace all existing properties on the node with the new set provided by the parameter.
+
 func (db *Database) UpdateProperties(destID int64, properties interface{}) {
 	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties")
 	ne := NeoError{}
