@@ -99,10 +99,7 @@ func (db *Database) getNodeByUri(uri string) (*Node, error) {
 	}
 	return &n, nil
 }
-
-// Relate creates a relationship of relType, with specified properties,
-// from srcId Node to the node identified by destId.
-func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p Props) (*Relationship, error) {
+func (db *Database) Relate(relType string, srcId int64, destId int64, p interface{}) (*Relationship, error) {
 	rel := Relationship{}
 	rel.Db = db
 	srcUri := join(join(db.HrefNode, strconv.FormatInt(srcId, 10)), "relationships")
@@ -123,6 +120,13 @@ func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p P
 		return &rel, ne
 	}
 	return &rel, nil
+
+}
+
+// Relate creates a relationship of relType, with specified properties,
+// from srcId Node to the node identified by destId.
+func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p Props) (*Relationship, error) {
+	return db.Relate(relType, srcId, destId, p)
 }
 
 func (db *Database) UpdateProperties(destID int64, properties interface{}) {
