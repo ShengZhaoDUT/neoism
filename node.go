@@ -12,6 +12,10 @@ import (
 
 // CreateNode creates a Node in the database.
 func (db *Database) CreateNode(p Props) (*Node, error) {
+	return db.Create(p)
+}
+
+func (db *Database) Create(p interface{}) (*Node, error) {
 	n := Node{}
 	n.Db = db
 	ne := NeoError{}
@@ -119,6 +123,18 @@ func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p P
 		return &rel, ne
 	}
 	return &rel, nil
+}
+
+func (db *Database) UpdateProperties(destID int64, properties interface{}) {
+	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties")
+	ne := NeoError{}
+	resp, err := db.Session.Put(url, &properties, nil, &ne)
+	if err != nil {
+		panic(err)
+	}
+	if resp.Status() != 204 {
+		panic(ne)
+	}
 }
 
 func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) error {
