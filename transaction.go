@@ -69,86 +69,20 @@ func (tr *txResponse) unmarshal(qs []*CypherQuery) error {
 
 // Begin opens a new transaction, executing zero or more cypher queries
 // inside the transaction.
-func (db *Database) Begin(qs []*CypherQuery) (*Tx, error) {
+func (db *Database) Commit(qs []*CypherQuery) error {
 	payload := txRequest{Statements: qs}
 	result := txResponse{}
 	ne := NeoError{}
-	resp, err := db.Session.Post(db.HrefTransaction, payload, &result, &ne)
+	resp, err := db.Session.Post(db.HrefTransaction+"/commit", payload, &result, &ne)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if resp.Status() != 201 {
-		return nil, ne
-	}
-	t := Tx{
-		db:         db,
-		hrefCommit: result.Commit,
-		Location:   resp.HttpResponse().Header.Get("Location"),
-		Errors:     result.Errors,
-		Expires:    result.Transaction.Expires,
-	}
-	if len(t.Errors) != 0 {
-		return &t, TxQueryError
-	}
-	err = result.unmarshal(qs)
-	if err != nil {
-		return &t, err
-	}
-	return &t, err
-}
-
-// Commit commits an open transaction.
-func (t *Tx) Commit() error {
-	if len(t.Errors) > 0 {
-		return TxQueryError
-	}
-	ne := NeoError{}
-	resp, err := t.db.Session.Post(t.hrefCommit, nil, nil, &ne)
-	if err != nil {
-		return err
-	}
-	if resp.Status() != 200 {
 		return ne
-	}
-	return nil // Success
-}
-
-// Query executes statements in an open transaction.
-func (t *Tx) Query(qs []*CypherQuery) error {
-	payload := txRequest{Statements: qs}
-	result := txResponse{}
-	ne := NeoError{}
-	resp, err := t.db.Session.Post(t.Location, payload, &result, &ne)
-	if err != nil {
-		return err
-	}
-	if resp.Status() == 404 {
-		return NotFound
-	}
-	if resp.Status() != 200 {
-		return &ne
-	}
-	t.Expires = result.Transaction.Expires
-	t.Errors = append(t.Errors, result.Errors...)
-	if len(t.Errors) != 0 {
-		return TxQueryError
 	}
 	err = result.unmarshal(qs)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// Rollback rolls back an open transaction.
-func (t *Tx) Rollback() error {
-	ne := NeoError{}
-	resp, err := t.db.Session.Delete(t.Location, nil, &ne)
-	if err != nil {
-		return err
-	}
-	if resp.Status() != 200 {
-		return ne
-	}
-	return nil // Success
 }
