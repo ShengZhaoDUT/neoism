@@ -85,7 +85,7 @@ func (db *Database) Commit(qs []*CypherQuery) {
 	if err != nil {
 		panic(err)
 	}
-	if resp.Status() != 201 {
+	if resp.Status() != 200 {
 		panic(ne)
 	}
 	err = result.unmarshal(qs)
