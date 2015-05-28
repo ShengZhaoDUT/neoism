@@ -67,30 +67,29 @@ func (tr *txResponse) unmarshal(qs []*CypherQuery) error {
 	return nil
 }
 
-func (db *Database) CommitQueries(queries []string) error {
+func (db *Database) CommitQueries(queries []string) {
 	qs := make([]*CypherQuery, 0, len(queries))
 	for _, q := range queries {
 		qs = append(qs, &CypherQuery{Statement: q})
 	}
-	return db.Commit(qs)
+	db.Commit(qs)
 }
 
 // Begin opens a new transaction, executing zero or more cypher queries
 // inside the transaction.
-func (db *Database) Commit(qs []*CypherQuery) error {
+func (db *Database) Commit(qs []*CypherQuery) {
 	payload := txRequest{Statements: qs}
 	result := txResponse{}
 	ne := NeoError{}
 	resp, err := db.Session.Post(db.HrefTransaction+"/commit", payload, &result, &ne)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	if resp.Status() != 201 {
-		return ne
+		panic(ne)
 	}
 	err = result.unmarshal(qs)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
 }
