@@ -67,6 +67,14 @@ func (tr *txResponse) unmarshal(qs []*CypherQuery) error {
 	return nil
 }
 
+func (db *Database) CommitQueries(queries []string) error {
+	qs := make([]*CypherQuery, 0, len(queries))
+	for _, q := range queries {
+		qs = append(qs, &CypherQuery{Statement: q})
+	}
+	return db.Commit(qs)
+}
+
 // Begin opens a new transaction, executing zero or more cypher queries
 // inside the transaction.
 func (db *Database) Commit(qs []*CypherQuery) error {

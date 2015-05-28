@@ -5,7 +5,9 @@
 package neoism
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -129,9 +131,9 @@ func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p P
 	return db.Relate(relType, srcId, destId, p)
 }
 
-// UpdateProperties replace all existing properties on the node with the new set provided by the parameter.
+// ReplaceProperties replace all existing properties on the node with the new set provided by the parameter.
 
-func (db *Database) UpdateProperties(destID int64, properties interface{}) {
+func (db *Database) ReplaceProperties(destID int64, properties interface{}) {
 	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties")
 	ne := NeoError{}
 	resp, err := db.Session.Put(url, &properties, nil, &ne)
@@ -141,6 +143,35 @@ func (db *Database) UpdateProperties(destID int64, properties interface{}) {
 	if resp.Status() != 204 {
 		panic(ne)
 	}
+}
+
+func (db *Database) Update(destID int64, properties interface{}) {
+
+	b, err := json.Marshal(properties)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(b))
+	var v interface{}
+	v = make(map[string]interface{})
+	err = json.Unmarshal(b, &v)
+	if err != nil {
+		panic(err)
+	}
+
+	query := fmt.Sprintf("MATCH (n) where id(n) = %d SET ", destID)
+
+	props := v.(map[string]interface{})
+	sets := make([]string, 0, len(props))
+
+	for key, _ := range props {
+		sets = append(sets, fmt.Sprintf("n.%s = {%s}", key, key))
+	}
+	fmt.Println("set", sets)
+	db.Cypher(&CypherQuery{
+		Statement:  query + strings.Join(sets, ", "),
+		Parameters: props,
+	})
 }
 
 func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) error {
@@ -327,40 +358,4 @@ func (n *Node) SetLabels(labels []string) error {
 		return ne
 	}
 	return nil // Success
-}
-
-// NodesByLabel gets all nodes with a given label.
-func (db *Database) NodesByLabel(label string) ([]*Node, error) {
-	uri := join(db.Url, "label", label, "nodes")
-	res := []*Node{}
-	ne := NeoError{}
-	resp, err := db.Session.Get(uri, nil, &res, &ne)
-	if err != nil {
-		return res, err
-	}
-	if resp.Status() == 404 {
-		return res, NotFound
-	}
-	if resp.Status() != 200 {
-		return res, ne
-	}
-	for _, n := range res {
-		n.Db = db
-	}
-	return res, nil // Success
-}
-
-// Labels lists all labels.
-func (db *Database) Labels() ([]string, error) {
-	uri := join(db.Url, "labels")
-	labels := []string{}
-	ne := NeoError{}
-	resp, err := db.Session.Get(uri, nil, &labels, &ne)
-	if err != nil {
-		return labels, err
-	}
-	if resp.Status() != 200 {
-		return labels, ne
-	}
-	return labels, nil
 }
