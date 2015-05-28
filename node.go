@@ -12,11 +12,6 @@ import (
 	"strings"
 )
 
-// CreateNode creates a Node in the database.
-func (db *Database) CreateNode(p Props) (*Node, error) {
-	return db.Create(p)
-}
-
 func (db *Database) Create(p interface{}) (*Node, error) {
 	n := Node{}
 	n.Db = db
@@ -125,13 +120,7 @@ func (db *Database) Relate(relType string, srcId int64, destId int64, p interfac
 
 }
 
-// Relate creates a relationship of relType, with specified properties,
-// from srcId Node to the node identified by destId.
-func (db *Database) RelateTwoNode(relType string, srcId int64, destId int64, p Props) (*Relationship, error) {
-	return db.Relate(relType, srcId, destId, p)
-}
-
-// ReplaceProperties replace all existing properties on the node with the new set provided by the parameter.
+// ReplaceProperties delete all existing properties on the node and set new ones.
 
 func (db *Database) ReplaceProperties(destID int64, properties interface{}) {
 	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties")
@@ -145,6 +134,7 @@ func (db *Database) ReplaceProperties(destID int64, properties interface{}) {
 	}
 }
 
+// Update set new properties without delete existing properties
 func (db *Database) Update(destID int64, properties interface{}) {
 
 	b, err := json.Marshal(properties)
