@@ -134,14 +134,25 @@ func (db *Database) ReplaceProperties(destID int64, properties interface{}) {
 	}
 }
 
-// Update set new properties without delete existing properties
-func (db *Database) Update(destID int64, properties interface{}) {
+func (db *Database) UpdateRelationship(srcID, destID int64, relType string, properties interface{}) *CypherQuery {
 
+	query := fmt.Sprintf("MATCH (src)-[n:%s]-(dest) where id(src) = %d and id(dest)=%d SET ", relType, srcID, destID)
+	return db.updateProperties(query, properties)
+}
+
+// Update set new properties without delete existing properties
+func (db *Database) UpdateNode(nodeID int64, properties interface{}) *CypherQuery {
+
+	query := fmt.Sprintf("MATCH (n) where id(n) = %d SET ", nodeID)
+	return db.updateProperties(query, properties)
+
+}
+
+func (db *Database) updateProperties(query string, properties interface{}) *CypherQuery {
 	b, err := json.Marshal(properties)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(b))
 	var v interface{}
 	v = make(map[string]interface{})
 	err = json.Unmarshal(b, &v)
@@ -149,19 +160,17 @@ func (db *Database) Update(destID int64, properties interface{}) {
 		panic(err)
 	}
 
-	query := fmt.Sprintf("MATCH (n) where id(n) = %d SET ", destID)
-
 	props := v.(map[string]interface{})
 	sets := make([]string, 0, len(props))
 
 	for key, _ := range props {
 		sets = append(sets, fmt.Sprintf("n.%s = {%s}", key, key))
 	}
-	fmt.Println("set", sets)
-	db.Cypher(&CypherQuery{
+	return &CypherQuery{
 		Statement:  query + strings.Join(sets, ", "),
 		Parameters: props,
-	})
+	}
+
 }
 
 func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) error {
