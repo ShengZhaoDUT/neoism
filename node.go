@@ -186,17 +186,18 @@ func (db *Database) SetNodeProperty(destID int64, key string, value interface{})
 	return true
 }
 
-func (db *Database) NodePropertyByKey(destID int64, key string, result interface{}) error {
+func (db *Database) NodePropertyByKey(destID int64, key string, result interface{}) bool {
 	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties", key)
 	ne := NeoError{}
 	resp, err := db.Session.Get(url, nil, &result, &ne)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	if resp.Status() != 200 && resp.Status() != 204 {
-		return ne
+
+		return false
 	}
-	return nil // Success!
+	return true // Success!
 }
 
 func (db *Database) GetNodeProperty(destID int64, result interface{}) error {
