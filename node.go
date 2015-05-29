@@ -173,17 +173,17 @@ func (db *Database) updateProperties(query string, properties interface{}) *Cyph
 
 }
 
-func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) error {
+func (db *Database) SetNodeProperty(destID int64, key string, value interface{}) bool {
 	url := join(db.HrefNode, strconv.FormatInt(destID, 10), "properties", key)
 	ne := NeoError{}
 	resp, err := db.Session.Put(url, &value, nil, &ne)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	if resp.Status() != 204 {
-		return ne
+		return false
 	}
-	return nil // Success!
+	return true
 }
 
 func (db *Database) NodePropertyByKey(destID int64, key string, result interface{}) error {
