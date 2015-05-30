@@ -213,6 +213,89 @@ func (db *Database) GetNodeProperty(destID int64, result interface{}) error {
 	return nil // Success!
 }
 
+func (db *Database) CreateLegacyIndexForSpatial(layerName string) error {
+	ne := NeoError{}
+	content := map[string]interface{}{
+		"name": layerName,
+		"config": map[string]interface{}{
+			"provider":      "spatial",
+			"geometry_type": "point",
+			"lat":           "lat",
+			"lon":           "lon",
+		},
+	}
+	resp, err := db.Session.Post(db.HrefNodeIndex, content, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 201 {
+		return ne
+	}
+	return nil // Success
+}
+
+func (db *Database) CreateSimplePointSpatialLayer(layerName string) error {
+	ne := NeoError{}
+	content := map[string]interface{}{
+		"layer": layerName,
+		"lat":   "lat",
+		"lon":   "lon",
+	}
+	resp, err := db.Session.Post(join(db.HrefSpatial, "addSimplePointLayer"), content, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 200 {
+		return ne
+	}
+	return nil // Success
+}
+
+func (db *Database) CreateEditableSpatialLayer(layerName string) error {
+	ne := NeoError{}
+	content := map[string]interface{}{
+		"layer":            layerName,
+		"format":           "WKT",
+		"nodePropertyName": "wkt",
+	}
+	resp, err := db.Session.Post(join(db.HrefSpatial, "addEditableLayer"), content, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 200 {
+		return ne
+	}
+	return nil // Success
+}
+
+func (db *Database) AddNodeToSpatialLayer(id int64, layerName string) error {
+	ne := NeoError{}
+	content := map[string]interface{}{
+		"layer": layerName,
+		"node":  join(db.HrefNode, strconv.FormatInt(id, 10)),
+	}
+	resp, err := db.Session.Post(join(db.HrefSpatial, "addNodeToLayer"), content, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 200 {
+		return ne
+	}
+	return nil // Success
+}
+
 // A Node is a node, with optional properties, in a graph.
 type Node struct {
 	entity
