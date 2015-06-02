@@ -1,6 +1,7 @@
 package neoism
 
 import (
+	"encoding/json"
 	"strconv"
 )
 
@@ -27,7 +28,7 @@ func (db *Database) NodeDistance(src int64, dst int64, relType []string, depth i
 	return int(result.(float64))
 }
 
-func (db *Database) Profile(src int64, dst int64, relType []string, depth int) map[string]string {
+func (db *Database) Profile(src int64, dst int64, relType []string, depth int) []byte {
 	url := join(db.Url, "ext", "Profile", "node", strconv.FormatInt(src, 10), "profile")
 	var result []interface{}
 	ne := NeoError{}
@@ -44,7 +45,7 @@ func (db *Database) Profile(src int64, dst int64, relType []string, depth int) m
 	profile := make(map[string]string)
 	_, err := db.Session.Post(url, payload, &result, &ne)
 	if err != nil {
-		return profile
+		return []byte{}
 	}
 	length := len(result)
 	if length%2 == 0 {
@@ -52,10 +53,15 @@ func (db *Database) Profile(src int64, dst int64, relType []string, depth int) m
 			profile[result[i].(string)] = result[i+1].(string)
 		}
 	}
-	return profile
+	b, errr := json.Marshal(profile)
+	if errr != nil {
+		return []byte{}
+	}
+
+	return b
 }
 
-func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int) []map[string]string {
+func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int) []byte {
 	url := join(db.Url, "ext", "Profiles", "node", strconv.FormatInt(src, 10), "profiles")
 	var result []interface{}
 	ne := NeoError{}
@@ -77,7 +83,7 @@ func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int
 	profiles := make([]map[string]string, 0)
 	_, err := db.Session.Post(url, payload, &result, &ne)
 	if err != nil {
-		return profiles
+		return []byte{}
 	}
 	length := len(result)
 	profile := make(map[string]string)
@@ -91,5 +97,10 @@ func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int
 			}
 		}
 	}
-	return profiles
+	b, errr := json.Marshal(profiles)
+	if errr != nil {
+		return []byte{}
+	}
+
+	return b
 }
