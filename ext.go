@@ -63,8 +63,6 @@ func (db *Database) Profile(src int64, dst int64, relType []string, depth int) [
 
 func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int) []byte {
 	url := join(db.Url, "ext", "Profiles", "node", strconv.FormatInt(src, 10), "profiles")
-	var result []interface{}
-	ne := NeoError{}
 	targets := make([]string, len(dst))
 	for i, x := range dst {
 		targets[i] = join(db.HrefNode, strconv.FormatInt(x, 10))
@@ -80,27 +78,28 @@ func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int
 		Types:   relType,
 		Depth:   depth,
 	}
-	profiles := make([]map[string]string, 0)
+	return db.GetProfiles(url, payload)
+}
+
+func (db *Database) RelatedNode(src int64, relType string) []byte {
+	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "all")
+	type s struct {
+		Type string `json:"type"`
+	}
+
+	payload := s{
+		Type: relType,
+	}
+	return db.GetProfiles(url, payload)
+}
+
+func (db *Database) GetProfiles(url string, payload interface{}) []byte {
+	var result interface{}
+	ne := NeoError{}
 	_, err := db.Session.Post(url, payload, &result, &ne)
 	if err != nil {
 		return []byte{}
 	}
-	length := len(result)
-	profile := make(map[string]string)
-	if length%2 == 0 {
-		for i := 0; i < length; i += 2 {
-			key := result[i].(string)
-			profile[key] = result[i+1].(string)
-			if key == "id" {
-				profiles = append(profiles, profile)
-				profile = make(map[string]string)
-			}
-		}
-	}
-	b, errr := json.Marshal(profiles)
-	if errr != nil {
-		return []byte{}
-	}
 
-	return b
+	return []byte(result.(string))
 }
