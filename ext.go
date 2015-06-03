@@ -93,6 +93,39 @@ func (db *Database) RelatedNode(src int64, relType string) []byte {
 	return db.GetProfiles(url, payload)
 }
 
+func (db *Database) InCommonNode(src int64, dst int64, relType string) []byte {
+	url := join(db.Url, "ext", "InCommonNode", "node", strconv.FormatInt(src, 10), "all")
+	target := join(db.HrefNode, strconv.FormatInt(dst, 10))
+	type s struct {
+		Target string `json:"target"`
+		Type   string `json:"type"`
+	}
+
+	payload := s{
+		Target: target,
+		Type:   relType,
+	}
+	return db.GetProfiles(url, payload)
+}
+
+// return value
+//{
+//"source": Marshal Object
+//	"type1": Marshal Object
+//	"type2": Marshal Object
+//}
+func (db *Database) FullProfile(src int64, relType []string) []byte {
+	url := join(db.Url, "ext", "FullProfile", "node", strconv.FormatInt(src, 10), "all")
+	type s struct {
+		Types []string `json:"types"`
+	}
+
+	payload := s{
+		Types: relType,
+	}
+	return db.GetProfiles(url, payload)
+}
+
 func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	var result interface{}
 	ne := NeoError{}
