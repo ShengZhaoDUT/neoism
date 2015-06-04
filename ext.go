@@ -81,6 +81,22 @@ func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int
 	return db.GetProfiles(url, payload)
 }
 
+func (db *Database) Props(src int64, dst []int64, relType []string, depth int) []byte {
+	url := join(db.Url, "ext", "Props", "node", strconv.FormatInt(src, 10), "props")
+	targets := make([]string, len(dst))
+	for i, x := range dst {
+		targets[i] = join(db.HrefNode, strconv.FormatInt(x, 10))
+	}
+	type s struct {
+		Targets []string `json:"targets"`
+	}
+
+	payload := s{
+		Targets: targets,
+	}
+	return db.GetProfiles(url, payload)
+}
+
 func (db *Database) RelatedNode(src int64, relType string) []byte {
 	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "all")
 	type s struct {
@@ -135,4 +151,36 @@ func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	}
 
 	return []byte(result.(string))
+}
+
+func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p interface{}) {
+	url := join(db.Url, "ext", "MultiUniqRelate", "node", strconv.FormatInt(src, 10), "relate")
+	targets := make([]string, len(dst))
+	for i, x := range dst {
+		targets[i] = join(db.HrefNode, strconv.FormatInt(x, 10))
+	}
+
+	type s struct {
+		Targets []string `json:"targets"`
+		Type    string   `json:"type"`
+		Props   string   `json:"props"`
+	}
+
+	payload := s{
+		Targets: targets,
+		Type:    relType,
+	}
+
+	if p != nil {
+		prop, _ := json.Marshal(p)
+		payload.Props = string(prop)
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+
+	return
 }
