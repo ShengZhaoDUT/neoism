@@ -109,6 +109,30 @@ func (db *Database) RelatedNode(src int64, relType string) []byte {
 	return db.GetProfiles(url, payload)
 }
 
+func (db *Database) IncomingRelatedNode(src int64, relType string) []byte {
+	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "int")
+	type s struct {
+		Type string `json:"type"`
+	}
+
+	payload := s{
+		Type: relType,
+	}
+	return db.GetProfiles(url, payload)
+}
+
+func (db *Database) OutgoingRelatedNode(src int64, relType string) []byte {
+	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "int")
+	type s struct {
+		Type string `json:"type"`
+	}
+
+	payload := s{
+		Type: relType,
+	}
+	return db.GetProfiles(url, payload)
+}
+
 func (db *Database) InCommonNode(src int64, dst int64, relType string) []byte {
 	url := join(db.Url, "ext", "InCommonNode", "node", strconv.FormatInt(src, 10), "all")
 	target := join(db.HrefNode, strconv.FormatInt(dst, 10))
@@ -146,7 +170,7 @@ func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	var result interface{}
 	ne := NeoError{}
 	_, err := db.Session.Post(url, payload, &result, &ne)
-	if err != nil {
+	if err != nil || result == nil {
 		return []byte{}
 	}
 
