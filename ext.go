@@ -81,7 +81,7 @@ func (db *Database) Profiles(src int64, dst []int64, relType []string, depth int
 	return db.GetProfiles(url, payload)
 }
 
-func (db *Database) Props(src int64, dst []int64, relType []string, depth int) []byte {
+func (db *Database) Props(src int64, dst []int64) []byte {
 	url := join(db.Url, "ext", "Props", "node", strconv.FormatInt(src, 10), "props")
 	targets := make([]string, len(dst))
 	for i, x := range dst {
