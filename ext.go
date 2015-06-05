@@ -110,7 +110,7 @@ func (db *Database) RelatedNode(src int64, relType string) []byte {
 }
 
 func (db *Database) IncomingRelatedNode(src int64, relType string) []byte {
-	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "int")
+	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "incoming")
 	type s struct {
 		Type string `json:"type"`
 	}
@@ -122,7 +122,7 @@ func (db *Database) IncomingRelatedNode(src int64, relType string) []byte {
 }
 
 func (db *Database) OutgoingRelatedNode(src int64, relType string) []byte {
-	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "int")
+	url := join(db.Url, "ext", "RelatedNode", "node", strconv.FormatInt(src, 10), "outgoing")
 	type s struct {
 		Type string `json:"type"`
 	}
