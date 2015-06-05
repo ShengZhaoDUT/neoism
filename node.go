@@ -296,6 +296,26 @@ func (db *Database) AddNodeToSpatialLayer(id int64, layerName string) error {
 	return nil // Success
 }
 
+func (db *Database) UpdateNodeToSpatialLayer(id int64, layerName string, lon, lat float64) error {
+	ne := NeoError{}
+	content := map[string]interface{}{
+		"layer":          layerName,
+		"geometry":       fmt.Sprintf("POINT(%f %f)", lon, lat),
+		"geometryNodeId": id,
+	}
+	resp, err := db.Session.Post(join(db.HrefSpatial, "updateGeometryFromWKT"), content, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 200 {
+		return ne
+	}
+	return nil // Success
+}
+
 // A Node is a node, with optional properties, in a graph.
 type Node struct {
 	entity
