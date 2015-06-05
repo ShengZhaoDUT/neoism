@@ -38,6 +38,42 @@ func (db *Database) CreateIndex(label, property string) (*Index, error) {
 	return db.addIndex(join(db.Url, "schema/index", label), property)
 }
 
+func (db *Database) DropUniqueness(label, property string) error {
+
+	uri := join(db.Url, "schema/constraint", label, "uniqueness", property)
+
+	ne := NeoError{}
+	resp, err := db.Session.Delete(uri, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 204 {
+		return ne
+	}
+	return nil
+}
+
+func (db *Database) DropIndex(label, property string) error {
+
+	uri := join(db.Url, "schema/index", label, property)
+
+	ne := NeoError{}
+	resp, err := db.Session.Delete(uri, nil, &ne)
+	if err != nil {
+		return err
+	}
+	if resp.Status() == 404 {
+		return NotFound
+	}
+	if resp.Status() != 204 {
+		return ne
+	}
+	return nil
+}
+
 func (db *Database) CreateUniqueness(label, property string) (*Index, error) {
 	return db.addIndex(join(db.Url, "schema/constraint", label, "uniqueness"), property)
 }
