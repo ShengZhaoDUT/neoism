@@ -141,7 +141,7 @@ func (db *Database) UpdateRelationship(srcID, destID int64, relType string, prop
 }
 
 // Update set new properties without delete existing properties
-func (db *Database) UpdateNode(nodeID int64, properties interface{}) *CypherQuery {
+func (db *Database) GetUpdateNodeCypher(nodeID int64, properties interface{}) *CypherQuery {
 
 	query := fmt.Sprintf("MATCH (n) where id(n) = %d SET ", nodeID)
 	return db.updateProperties(query, properties)
