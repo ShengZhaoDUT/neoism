@@ -203,7 +203,7 @@ func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface
 		panic(err)
 	}
 
-	return result != nil && int(result.(float64)) == 1
+	return result != nil && int(result.(float64)) == 0
 }
 
 func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p interface{}) {
