@@ -177,6 +177,35 @@ func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	return []byte(result.(string))
 }
 
+func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface{}) bool {
+	url := join(db.Url, "ext", "UniqRelate", "node", strconv.FormatInt(src, 10), "relate")
+	target := join(db.HrefNode, strconv.FormatInt(dst, 10))
+
+	type s struct {
+		Target string `json:"target"`
+		Type   string `json:"type"`
+		Props  string `json:"props"`
+	}
+
+	payload := s{
+		Target: target,
+		Type:   relType,
+	}
+
+	if p != nil {
+		prop, _ := json.Marshal(p)
+		payload.Props = string(prop)
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+
+	return result != nil && int(result.(float64)) == 1
+}
+
 func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p interface{}) {
 	url := join(db.Url, "ext", "MultiUniqRelate", "node", strconv.FormatInt(src, 10), "relate")
 	targets := make([]string, len(dst))
