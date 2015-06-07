@@ -184,7 +184,7 @@ func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface
 	type s struct {
 		Target string `json:"target"`
 		Type   string `json:"type"`
-		Props  string `json:"props"`
+		Props  string `json:"props,omitempty"`
 	}
 
 	payload := s{
@@ -193,7 +193,7 @@ func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface
 	}
 
 	if p != nil {
-		prop, _ := json.Marshal(p)
+		prop, _ := json.Marshal(p.(Props))
 		payload.Props = string(prop)
 	}
 	var result interface{}
@@ -202,7 +202,6 @@ func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface
 	if err != nil {
 		panic(err)
 	}
-
 	return result != nil && int(result.(float64)) == 0
 }
 
@@ -216,7 +215,7 @@ func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p in
 	type s struct {
 		Targets []string `json:"targets"`
 		Type    string   `json:"type"`
-		Props   string   `json:"props"`
+		Props   string   `json:"props,omitempty"`
 	}
 
 	payload := s{
@@ -225,7 +224,7 @@ func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p in
 	}
 
 	if p != nil {
-		prop, _ := json.Marshal(p)
+		prop, _ := json.Marshal(p.(Props))
 		payload.Props = string(prop)
 	}
 	var result interface{}
