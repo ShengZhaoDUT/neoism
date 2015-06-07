@@ -236,3 +236,63 @@ func (db *Database) MultiUniqRelate(src int64, dst []int64, relType string, p in
 
 	return
 }
+
+func (db *Database) UniqRelateOutgoing(src int64, dst int64, relType string, p interface{}) bool {
+	url := join(db.Url, "ext", "UniqRelate", "node", strconv.FormatInt(src, 10), "outgoing")
+	target := join(db.HrefNode, strconv.FormatInt(dst, 10))
+
+	type s struct {
+		Target string `json:"target"`
+		Type   string `json:"type"`
+		Props  string `json:"props,omitempty"`
+	}
+
+	payload := s{
+		Target: target,
+		Type:   relType,
+	}
+
+	if p != nil {
+		prop, _ := json.Marshal(p.(Props))
+		payload.Props = string(prop)
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+	return result != nil && int(result.(float64)) == 0
+}
+
+func (db *Database) MultiUniqRelateOutgoing(src int64, dst []int64, relType string, p interface{}) {
+	url := join(db.Url, "ext", "MultiUniqRelate", "node", strconv.FormatInt(src, 10), "outgoing")
+	targets := make([]string, len(dst))
+	for i, x := range dst {
+		targets[i] = join(db.HrefNode, strconv.FormatInt(x, 10))
+	}
+
+	type s struct {
+		Targets []string `json:"targets"`
+		Type    string   `json:"type"`
+		Props   string   `json:"props,omitempty"`
+	}
+
+	payload := s{
+		Targets: targets,
+		Type:    relType,
+	}
+
+	if p != nil {
+		prop, _ := json.Marshal(p.(Props))
+		payload.Props = string(prop)
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}
