@@ -25,7 +25,7 @@ func (db *Database) Recommendation(id int64, limit int) ([]Recommendation, error
 	return reco, err
 }
 
-func (db *Database) ConcactRecommendation(id int64, limit int) ([]ConcactRecommendation, error) {
+func (db *Database) ContactRecommendation(id int64, limit int) ([]ConcactRecommendation, error) {
 	reco := []ConcactRecommendation{}
 
 	uri := join(db.HrefCReco, strconv.FormatInt(id, 10))

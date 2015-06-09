@@ -166,12 +166,24 @@ func (db *Database) FullProfile(src int64, relType []string) []byte {
 	return db.GetProfiles(url, payload)
 }
 
+func (db *Database) UploadContact(src int64, phones []string) []byte {
+	url := join(db.Url, "ext", "UploadContact", "node", strconv.FormatInt(src, 10), "uploadContact")
+	type s struct {
+		Phones []string `json:"phones"`
+	}
+
+	payload := s{
+		Phones: phones,
+	}
+	return db.GetProfiles(url, payload)
+}
+
 func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	var result interface{}
 	ne := NeoError{}
 	_, err := db.Session.Post(url, payload, &result, &ne)
-	if err != nil || result == nil {
-		return []byte{}
+	if err != nil || result == nil || result.(string) == "" {
+		return []byte("[]")
 	}
 
 	return []byte(result.(string))
