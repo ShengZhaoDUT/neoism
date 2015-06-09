@@ -45,6 +45,30 @@ func (db *Database) ConcactRecommendation(id int64, limit int) ([]ConcactRecomme
 	return reco, err
 }
 
+func (db *Database) GroupRecommendation(src int64, limit int) ([]int64, error) {
+	type s struct {
+		ID int64 `json:"id"`
+	}
+	result := []s{}
+	cq := CypherQuery{
+		Statement: `
+start src = node({src})
+match (n:Group)
+where not src-[:Join]-n limit 10 return id(n) as id`,
+		Parameters: Props{"src": src},
+		Result:     &result,
+	}
+	db.Cypher(&cq)
+	IDList := make([]int64, 0)
+	if result == nil {
+		return IDList, nil
+	}
+	for _, x := range result {
+		IDList = append(IDList, x.ID)
+	}
+	return IDList, nil
+}
+
 type Recommendation struct {
 	//	UUID  string      `json:"uuid"`
 	ID              int64       `json:"id"`
