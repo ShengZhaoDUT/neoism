@@ -189,6 +189,47 @@ func (db *Database) GetProfiles(url string, payload interface{}) []byte {
 	return []byte(result.(string))
 }
 
+func (db *Database) UpdateProperties(src int64, p interface{}) {
+	url := join(db.Url, "ext", "UpdateNodeProps", "node", strconv.FormatInt(src, 10), "update")
+	type s struct {
+		Props string `json:"props,omitempty"`
+	}
+	prop, _ := json.Marshal(p)
+	payload := s{
+		Props: string(prop),
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func (db *Database) UpdateRelationship(src, dst int64, relType string, p interface{}) {
+	url := join(db.Url, "ext", "UpdateRelProps", "node", strconv.FormatInt(src, 10), "update")
+	type s struct {
+		Dst   int64  `json:"dst"`
+		Type  string `json:"type"`
+		Props string `json:"props,omitempty"`
+	}
+	prop, _ := json.Marshal(p)
+	payload := s{
+		Dst:   dst,
+		Type:  relType,
+		Props: string(prop),
+	}
+	var result interface{}
+	ne := NeoError{}
+	_, err := db.Session.Post(url, payload, &result, &ne)
+	if err != nil {
+		panic(err)
+	}
+	return
+
+}
+
 func (db *Database) UniqRelate(src int64, dst int64, relType string, p interface{}) bool {
 	url := join(db.Url, "ext", "UniqRelate", "node", strconv.FormatInt(src, 10), "relate")
 	target := join(db.HrefNode, strconv.FormatInt(dst, 10))
