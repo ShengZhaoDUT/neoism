@@ -54,7 +54,7 @@ func (db *Database) GroupRecommendation(src int64, limit int) ([]int64, error) {
 		Statement: `
 start src = node({src})
 match (n:Group)
-where not src-[:Join]-n limit 10 return id(n) as id`,
+where not src-[:Join]-n return id(n) as id limit 10`,
 		Parameters: Props{"src": src},
 		Result:     &result,
 	}
